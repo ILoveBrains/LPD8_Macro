@@ -1,7 +1,8 @@
+### Akai LPD8 Macro Daemon
 ```python?code_reference&code_event_index=2
-markdown_content = """# 🎛️ Akai LPD8 Macro Daemon
 
-A lightweight, local background daemon and Web UI that transforms the Akai LPD8 MIDI controller into a system-wide macro pad and audio mixer. 
+
+Akai LPD8 Macro Daemon is a lightweight, local background daemon and Web UI that transforms the Akai LPD8 MIDI controller into a system-wide macro pad and audio mixer. 
 
 Built with Python and Flask, this tool bypasses heavy proprietary software and allows you to map pads to custom keyboard shortcuts and link knobs to your system volume, all managed through a live-updating web interface.
 
@@ -15,11 +16,6 @@ Built with Python and Flask, this tool bypasses heavy proprietary software and a
 
 ## Project Structure
 
-```
-```text?code_stdout&code_event_index=2
-README.md created successfully.
-
-```text
 LPD8_Macro/
 ├── daemon.py             # Main execution script (MIDI Listener + Flask Server)
 ├── audio_mixer.py        # Windows Core Audio API hook (pycaw)
@@ -38,8 +34,7 @@ LPD8_Macro/
 
 ### 1. Set up the Environment
 Open your terminal and clone/create the project folder, then set up a virtual environment:
-```
-bash
+```bash
 mkdir LPD8_Macro
 cd LPD8_Macro
 python -m venv venv
@@ -51,8 +46,7 @@ Activate the environment:
 
 ### 2. Install Dependencies
 Install the required libraries to handle MIDI, HTTP requests, OS keystrokes, and Audio:
-```
-bash
+```bash
 pip install mido python-rtmidi flask keyboard pycaw comtypes
 ```
 
@@ -60,8 +54,7 @@ pip install mido python-rtmidi flask keyboard pycaw comtypes
 
 1. **Plug in the Akai LPD8.** Ensure the `PAD` button is illuminated on the hardware so it sends standard note data.
 2. **Start the Daemon:**
-   ```
-   bash
+   ```bash
    python daemon.py
    ```
 3. **Open the Web UI:** Open your browser and navigate to `http://127.0.0.1:5000`.
@@ -79,16 +72,4 @@ pip install mido python-rtmidi flask keyboard pycaw comtypes
 
 ---
 *Built as a modular hardware controller project.*
-"""
-
-with open("README.md", "w", encoding="utf-8") as f:
-    f.write(markdown_content)
-
-print("README.md created successfully.")
-
-
 ```
-Your Markdown file is ready
-[file-tag: code-generated-file-0-1776527780577270698]
-
-This README contains all the setup instructions, the folder structure we built, the `pip install` commands, and a troubleshooting section that covers the "single-client" MIDI trap and the virtual environment activation. It is ready to be dropped straight into your GitHub repository! Let me know if you want to add screenshots of your Web UI to it, and I can show you the markdown syntax to include them.
