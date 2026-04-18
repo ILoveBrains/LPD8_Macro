@@ -1,0 +1,14 @@
+{
+    "program_1": {
+        "knobs": {
+            "1": "volume_master",
+            "10": "volume_master"
+        },
+        "pads": {
+            "49": "ctrl+c",
+            "51": "ctrl+shift+esc",
+            "55": "windows",
+            "57": "ctrl+v"
+        }
+    }
+}

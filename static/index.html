@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LPD8 Macro Editor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .knob-circle { width: 80px; height: 80px; border-radius: 50%; border: 3px dashed #6c757d; display: flex; align-items: center; justify-content: center; margin: 0 auto; cursor: pointer; transition: 0.2s; }
+        .knob-circle:hover { border-color: #0d6efd; color: #0d6efd; background: rgba(13, 110, 253, 0.1); }
+    </style>
+</head>
+<body class="bg-body-tertiary">
+
+<div class="container py-5 text-center">
+    <h2 class="mb-4">Akai LPD8 Configurator</h2>
+
+    <div class="mb-5 d-flex justify-content-center">
+        <select class="form-select w-25 shadow-sm" id="programSelector" onchange="renderUI()">
+            <option value="program_1">Program 1</option>
+            <option value="program_2">Program 2</option>
+            <option value="program_3">Program 3</option>
+            <option value="program_4">Program 4</option>
+        </select>
+    </div>
+
+    <div class="card shadow-sm mb-4 border-0 bg-dark-subtle">
+        <div class="card-body">
+            <h5 class="text-muted text-start mb-4">Potentiometers (Knobs)</h5>
+            <div class="row g-4" id="knobContainer"></div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 bg-dark-subtle">
+        <div class="card-body">
+            <h5 class="text-muted text-start mb-4">Drum Pads</h5>
+            <div class="row g-3" id="padContainer"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle">Edit Input</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-start">
+        <div class="mb-3">
+            <label class="form-label fw-bold" id="inputIdLabel">Hardware ID</label>
+            <input type="text" class="form-control bg-light text-dark fw-mono" id="idInput" placeholder="e.g. 48 for Pad 1, or 1 for Knob 1">
+            <div class="form-text">Check your Python terminal to see the ID when you touch the hardware.</div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Action / Macro</label>
+            <input type="text" class="form-control" id="actionInput" placeholder="e.g. windows, ctrl+c, or volume_master">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary px-4" onclick="saveMapping()">Save Mapping</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let appConfig = {};
+    const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+    let activeType = 'pads'; // Default
+
+    // 1. Fetch Config
+    function loadConfig() {
+        fetch('/api/config')
+            .then(r => r.json())
+            .then(data => {
+                appConfig = data;
+                renderUI();
+            });
+    }
+
+    // 2. Render UI
+    function renderUI() {
+        const program = document.getElementById('programSelector').value;
+        if (!appConfig[program]) appConfig[program] = { pads: {}, knobs: {} };
+
+        const pContainer = document.getElementById('padContainer');
+        const kContainer = document.getElementById('knobContainer');
+        
+        pContainer.innerHTML = '';
+        kContainer.innerHTML = '';
+
+        // Render existing Pads from JSON
+        Object.entries(appConfig[program].pads).forEach(([id, action]) => {
+            pContainer.innerHTML += `
+                <div class="col-3">
+                    <button class="btn btn-primary w-100 py-3" onclick="openEditor('pads', '${id}', '${action}')">
+                        <div class="fw-bold">ID: ${id}</div>
+                        <div class="small">${action}</div>
+                    </button>
+                </div>`;
+        });
+        // Add an "Add New Pad" button
+        pContainer.innerHTML += `<div class="col-3"><button class="btn btn-outline-dashed w-100 py-3" onclick="openEditor('pads', '', '')">+ Add Pad</button></div>`;
+
+        // Render existing Knobs from JSON
+        Object.entries(appConfig[program].knobs).forEach(([id, action]) => {
+            kContainer.innerHTML += `
+                <div class="col-3 text-center">
+                    <div class="knob-circle mb-2" onclick="openEditor('knobs', '${id}', '${action}')">
+                        <small class="fw-bold">ID: ${id}</small>
+                    </div>
+                    <div class="small text-truncate">${action}</div>
+                </div>`;
+        });
+        kContainer.innerHTML += `<div class="col-3 text-center"><div class="knob-circle mb-2" onclick="openEditor('knobs', '', '')">+</div><small>Add Knob</small></div>`;
+    }
+
+    // 3. Open Editor
+    function openEditor(type, id, action) {
+        activeType = type;
+        document.getElementById('idInput').value = id;
+        document.getElementById('actionInput').value = action;
+        editModal.show();
+    }
+
+    // 4. Save Mapping
+    function saveMapping() {
+        const program = document.getElementById('programSelector').value;
+        const id = document.getElementById('idInput').value.trim();
+        const action = document.getElementById('actionInput').value.trim();
+
+        if (!id || !action) {
+            alert("Both ID and Action are required!");
+            return;
+        }
+
+        // Update the local object
+        appConfig[program][activeType][id] = action;
+
+        // POST to Python
+        fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(appConfig)
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log("Save successful!");
+                editModal.hide();
+                renderUI();
+            } else {
+                alert("Server error while saving.");
+            }
+        })
+        .catch(err => alert("Could not connect to server: " + err));
+    }
+
+    // Initialize
+    loadConfig();
+</script>
+</body>
+</html>
