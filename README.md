@@ -38,7 +38,8 @@ LPD8_Macro/
 
 ### 1. Set up the Environment
 Open your terminal and clone/create the project folder, then set up a virtual environment:
-```bash
+```
+bash
 mkdir LPD8_Macro
 cd LPD8_Macro
 python -m venv venv
@@ -50,7 +51,8 @@ Activate the environment:
 
 ### 2. Install Dependencies
 Install the required libraries to handle MIDI, HTTP requests, OS keystrokes, and Audio:
-```bash
+```
+bash
 pip install mido python-rtmidi flask keyboard pycaw comtypes
 ```
 
@@ -58,7 +60,8 @@ pip install mido python-rtmidi flask keyboard pycaw comtypes
 
 1. **Plug in the Akai LPD8.** Ensure the `PAD` button is illuminated on the hardware so it sends standard note data.
 2. **Start the Daemon:**
-   ```bash
+   ```
+   bash
    python daemon.py
    ```
 3. **Open the Web UI:** Open your browser and navigate to `http://127.0.0.1:5000`.
