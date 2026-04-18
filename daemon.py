@@ -22,7 +22,14 @@ def get_config():
     if not os.path.exists(CONFIG_FILE):
         return jsonify({"program_1": {"pads": {}, "knobs": {}}})
     with open(CONFIG_FILE, 'r') as f:
+<<<<<<< Updated upstream
         return json.load(f)
+=======
+        try:
+            return jsonify(json.load(f))
+        except json.JSONDecodeError:
+            return jsonify({"error": "Malformed configuration file"}), 500
+>>>>>>> Stashed changes
 
 @app.route('/api/config', methods=['POST'])
 def save_config():
@@ -37,7 +44,15 @@ def run_web_server():
 # --- MIDI DAEMON SETUP ---
 def load_config():
     if not os.path.exists(CONFIG_FILE): return {}
+<<<<<<< Updated upstream
     with open(CONFIG_FILE, 'r') as f: return json.load(f)
+=======
+    with open(CONFIG_FILE, 'r') as f:
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            return {}
+>>>>>>> Stashed changes
 
 def run_midi_daemon():
     audio = WindowsAudio()

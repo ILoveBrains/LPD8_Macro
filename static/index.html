@@ -140,6 +140,13 @@
         // Update the local object
         appConfig[program][activeType][id] = action;
 
+<<<<<<< Updated upstream
+=======
+        // If the ID was changed, we should ideally remove the old one, 
+        // but for this simple implementation, we just ensure the new one is set.
+        // The UI will refresh from the updated appConfig.
+
+>>>>>>> Stashed changes
         // POST to Python
         fetch('/api/config', {
             method: 'POST',
@@ -158,6 +165,19 @@
         .catch(err => alert("Could not connect to server: " + err));
     }
 
+<<<<<<< Updated upstream
+=======
+    // Auto-refresh config every 2 seconds to see IDs detected by Python
+    setInterval(() => {
+        fetch('/api/config')
+            .then(r => r.json())
+            .then(data => {
+                appConfig = data;
+                renderUI();
+            });
+    }, 2000);
+
+>>>>>>> Stashed changes
     // Initialize
     loadConfig();
 </script>
