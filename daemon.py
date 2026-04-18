@@ -1,5 +1,6 @@
 import mido
 import keyboard
+import mouse
 import json
 import os
 import threading
@@ -67,25 +68,47 @@ def run_midi_daemon():
                     
                     if action:
                         print(f"[PAD] ID {note_str} -> Executing: {action}")
-                        keyboard.send(action)
+                        if action.startswith("mouse:"):
+                            cmd = action.split(":")[1]
+                            if cmd == "left": mouse.click('left')
+                            elif cmd == "right": mouse.click('right')
+                            elif cmd == "middle": mouse.click('middle')
+                            elif cmd == "double": mouse.double_click('left')
+                            elif cmd == "scroll_up": mouse.wheel(delta=5)
+                            elif cmd == "scroll_down": mouse.wheel(delta=-5)
+                        
+                        elif action.startswith("type:"):
+                            # Types the text following the colon
+                            keyboard.write(action.split(":", 1)[1])
+                        else:
+                            # Default behavior: send keyboard shortcut
+                            keyboard.send(action)
                     else:
                         print(f"[PAD] ID {note_str} is unmapped. (Velocity: {msg.velocity})")
                 
                 # Handle Knob Turns (Control Change)
                 elif msg.type == 'control_change':
-                    knob_str = str(msg.control)
-                    action = config.get(current_prog, {}).get("knobs", {}).get(knob_str)
+                    knob_id = msg.control
+                    knob_str = str(knob_id)
+                    knobs_config = config.get(current_prog, {}).get("knobs", {})
+                    action = knobs_config.get(knob_str)
                     
                     if action == "volume_master":
-                        # We don't want to flood the console with every tiny movement, 
-                        # but we should confirm it's working
                         audio.set_master(msg.value)
-                        if msg.value % 10 == 0: # Only print every 10th value to keep console clean
+                        if msg.value % 10 == 0:
                             print(f"[KNOB] ID {knob_str} -> Master Volume: {msg.value}")
-                    elif action:
-                        print(f"[KNOB] ID {knob_str} -> Action: {action} (Value: {msg.value})")
                     else:
-                        print(f"[KNOB] ID {knob_str} is unmapped. (Value: {msg.value})")
+                        # Try dynamic app volume assignment
+                        reserved = list(knobs_config.keys())
+                        app_name = audio.set_app_volume(knob_id, msg.value, reserved)
+                        
+                        if app_name:
+                            if msg.value % 10 == 0:
+                                print(f"[KNOB] ID {knob_id} -> {app_name} Volume: {msg.value}")
+                        elif action:
+                            print(f"[KNOB] ID {knob_str} -> Action: {action} (Value: {msg.value})")
+                        else:
+                            print(f"[KNOB] ID {knob_str} is unmapped. (Value: {msg.value})")
 
     except Exception as e:
         print(f"MIDI Error: {e}")
