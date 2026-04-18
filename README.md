@@ -1,5 +1,4 @@
 ### Akai LPD8 Macro Daemon
-```python?code_reference&code_event_index=2
 
 
 Akai LPD8 Macro Daemon is a lightweight, local background daemon and Web UI that transforms the Akai LPD8 MIDI controller into a system-wide macro pad and audio mixer. 
@@ -15,7 +14,7 @@ Built with Python and Flask, this tool bypasses heavy proprietary software and a
 * **Unified Threading:** The MIDI listener and Web Server run concurrently in a single script.
 
 ## Project Structure
-
+```
 LPD8_Macro/
 ├── daemon.py             # Main execution script (MIDI Listener + Flask Server)
 ├── audio_mixer.py        # Windows Core Audio API hook (pycaw)
